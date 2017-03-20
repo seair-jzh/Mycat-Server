@@ -424,22 +424,26 @@ public abstract class AbstractConnection implements NIOConnection {
 	private final void writeNotSend(ByteBuffer buffer) {
 		if (isSupportCompress()) {
 			ByteBuffer newBuffer = CompressUtil.compressMysqlPacket(buffer, this, compressUnfinishedDataQueue);
-			writeQueue.offer(newBuffer);
-			
+			//writeQueue.offer(newBuffer);
+			writeToQueue(newBuffer);
 		} else {
-			writeQueue.offer(buffer);
+			//writeQueue.offer(buffer);
+			writeToQueue(buffer);
 		}
 	}
 
 
+	//jiezhia edit
     @Override
-	public final void write(ByteBuffer buffer) {
+	public void write(ByteBuffer buffer) {
     	
 		if (isSupportCompress()) {
 			ByteBuffer newBuffer = CompressUtil.compressMysqlPacket(buffer, this, compressUnfinishedDataQueue);
-			writeQueue.offer(newBuffer);
+			writeToQueue(newBuffer);
+			//writeQueue.offer(newBuffer);
 		} else {
-			writeQueue.offer(buffer);
+			writeToQueue(buffer);
+			//writeQueue.offer(buffer);
 		}
 
 		// if ansyn write finishe event got lock before me ,then writing
@@ -469,6 +473,10 @@ public abstract class AbstractConnection implements NIOConnection {
 		} else {
 			return buffer;
 		}
+	}
+	
+	public void writeToQueue(ByteBuffer bb){
+		writeQueue.offer(bb);
 	}
 
 	public ByteBuffer writeToBuffer(byte[] src, ByteBuffer buffer) {

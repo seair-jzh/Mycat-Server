@@ -1,78 +1,487 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE mycat:schema SYSTEM "schema.dtd">
 <mycat:schema xmlns:mycat="http://io.mycat/">
+	
 
-	<schema name="TESTDB" checkSQLschema="false" sqlMaxLimit="100">
-		<!-- auto sharding by id (long) -->
-		<table name="travelrecord" dataNode="dn1,dn2,dn3" rule="auto-sharding-long" />
-
-		<!-- global table is auto cloned to all defined data nodes ,so can join
-			with any table whose sharding node is in the same data node -->
-		<table name="company" primaryKey="ID" type="global" dataNode="dn1,dn2,dn3" />
-		<table name="goods" primaryKey="ID" type="global" dataNode="dn1,dn2" />
-		<!-- random sharding using mod sharind rule -->
-		<table name="hotnews" primaryKey="ID" autoIncrement="true" dataNode="dn1,dn2,dn3"
-			   rule="mod-long" />
-		<!-- <table name="dual" primaryKey="ID" dataNode="dnx,dnoracle2" type="global"
-			needAddLimit="false"/> <table name="worker" primaryKey="ID" dataNode="jdbc_dn1,jdbc_dn2,jdbc_dn3"
-			rule="mod-long" /> -->
-		<table name="employee" primaryKey="ID" dataNode="dn1,dn2"
-			   rule="sharding-by-intfile" />
-		<table name="customer" primaryKey="ID" dataNode="dn1,dn2"
-			   rule="sharding-by-intfile">
-			<childTable name="orders" primaryKey="ID" joinKey="customer_id"
-						parentKey="id">
-				<childTable name="order_items" joinKey="order_id"
-							parentKey="id" />
-			</childTable>
-			<childTable name="customer_addr" primaryKey="ID" joinKey="customer_id"
-						parentKey="id" />
-		</table>
-		<!-- <table name="oc_call" primaryKey="ID" dataNode="dn1$0-743" rule="latest-month-calldate"
-			/> -->
+	
+	<schema checkSQLschema="false" name="db_fish3d_qq_game">
+		
+		
+	
+		<table dataNode="dn$1-16" name="accounts" primaryKey="account" rule="sharding-by-murmur-account"/>
+		<table dataNode="dn$1-16" name="act_city_area_cnt" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="act_city_area_player_cnt" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="act_lucky_wheel" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="act_lucky_wheel_cnt" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="act_lucky_wheel_player_cnt" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="act_sign_roulette_cnt" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="act_sign_roulette_player_cnt" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="activity_bonus" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="activity_match_tags" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="activity_rank_status" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="activity_times" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="auction_act_award_info" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="auction_act_info" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_day_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_crab_round_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_day_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_dragon_round_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_day_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_octopus_round_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_day_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_1" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_10" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_100" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_1000" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_200" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_300" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_50" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_500" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_pirate_round_score_80" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="boss_running_data" primaryKey="key_name" rule="sharding-by-murmur-key_name"/>
+		<table dataNode="dn$1-16" name="classic_activity_1_yuan" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_account_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_act_fish" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_auction_user_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_avatar_fishing" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_city_area" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_day_sign" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_energy_collection" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_fire_daily" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_fire_daily_pool" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="classic_activity_fishing" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_golden_fish" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_match_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_navigation" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_ocean_hunter" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_recharge" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_sacrifice" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_score_fp" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_seven_day_gift" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_seven_day_roulette" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_target_fp" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_activity_task_fishing" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_control_adjust_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_fish_prob_record" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_national_rank_award_user" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_national_rank_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_province_rank_award_user" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="classic_small_boss_ctrl" primaryKey="cell" rule="mod-long-cell"/>
+		<table dataNode="dn$1-16" name="classic_special_fish_guide" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="com_activity_cornucopia" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="conf_control" primaryKey="name" rule="sharding-by-murmur-name"/>
+		<table dataNode="dn$1-16" name="conf_single_mode" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="dragon_catch_record" primaryKey="cell" rule="mod-long-cell"/>
+		<table dataNode="dn$1-16" name="dragon_killer_award_user" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="dragon_killer_rank_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="dragon_rank_award_user_1000" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="dragon_rank_score_1000" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="dragon_rank_status_1000" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="expedition_user_rank" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="expired_com_keys_info" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="expired_match_tags" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="expired_matchtm_cycles" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="expired_matchtm_tags" primaryKey="tag" rule="mod-long-tag"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="expired_rank_keys_info" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="fc_best_owner_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_best_owner_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fc_best_owner_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_best_player_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_best_player_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fc_best_player_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_follow_owner" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fc_heat_week_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_heat_week_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fc_heat_week_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fc_info" primaryKey="fc_id" rule="mod-long-fc_id"/>
+		<table dataNode="dn$1-16" name="fc_owner_history" primaryKey="fc_id" rule="mod-long-fc_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="fc_owner_info" primaryKey="fc_short_id" rule="mod-long-fc_short_id"/>
+		<table dataNode="dn$1-16" name="fc_player" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fc_player_history" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fc_red_packet" primaryKey="fc_id" rule="mod-long-fc_id"/>
+		<table dataNode="dn$1-16" name="fc_red_packet_history" primaryKey="fc_id" rule="mod-long-fc_id"/>
+		<table dataNode="dn$1-16" name="fc_reward_pond_info" primaryKey="fc_tag" rule="mod-long-fc_tag"/>
+		<table dataNode="dn$1-16" name="fc_room_info" primaryKey="room_id" rule="mod-long-room_id"/>
+		<table dataNode="dn$1-16" name="fc_task_customer_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fc_task_host_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_basic_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_breed_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_breed_record_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_capacity_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_clean_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_fish_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_gs_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fishpond_hatch_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_help_breed_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_market_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_pool_fish" primaryKey="guid" rule="mod-long-guid"/>
+		<table dataNode="dn$1-16" name="fishpond_pool_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_robot_record_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_score_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_synthesis_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_synthesis_levelup" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_userinfo" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fishpond_vitality_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fp_friend_action_record" primaryKey="guid" rule="mod-long-guid"/>
+		<table dataNode="dn$1-16" name="fp_friend_pick_good_fish" primaryKey="guid" rule="mod-long-guid"/>
+		<table dataNode="dn$1-16" name="fri_basic_data" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fri_friend_req" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fri_friendship" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="fri_praise_user" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="friend_rank_job_step" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="friend_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="fruit_ctrl_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="fruit_guess_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="game_center_privilege" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="game_switch_info" primaryKey="key_name" rule="sharding-by-murmur-key_name"/>
+		<table dataNode="dn$1-16" name="gift_bag_present_time" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="gold_bullet_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="gold_bullet_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="gold_bullet_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="gold_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="gold_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="gold_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="guide_awarded" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="guild_expedition_info" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_group_info" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="guild_info" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_market_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="guild_market_goods" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="guild_member_red_packet" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_members" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_personal_task_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="guild_rank" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_today_red_packet" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_today_red_packet_pool" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_total_red_packet_pool" primaryKey="guild_id" rule="mod-long-guild_id"/>
+		<table dataNode="dn$1-16" name="guild_unique_name" primaryKey="guild_name" rule="sharding-by-murmur-guild_name"/>
+		<table dataNode="dn$1-16" name="guild_yc_market_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="guild_yc_market_goods" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="help_other_record" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="help_record_award" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="mall_goods" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="mall_player_goods" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="mall_player_orders" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="mall_player_records" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="mall_player_times" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="mall_status" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="mall_stock" primaryKey="code" rule="sharding-by-murmur-code"/>
+		<table dataNode="dn$1-16" name="mall_stock_cnt" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="mall_times" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="match8p_bplayer" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_config" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_cup_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="match_cup_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="match_cup_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="match_cycles" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_finance" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_gambling" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_lucky_reward" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_mail" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="match_player" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_reward" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_share_times" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="match_status" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="match_top_n" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchmr_config" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchmr_player" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="matchmr_reward" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchmr_round" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchmr_round_player" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="matchmr_status" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_config" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_cycles" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_finance" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_lucky_reward" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_player" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="matchtm_reward" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_share_times" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="matchtm_status" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_team" primaryKey="team_id" rule="mod-long-team_id"/>
+		<table dataNode="dn$1-16" name="matchtm_top_n" primaryKey="tag" rule="mod-long-tag"/>
+		<table dataNode="dn$1-16" name="matchtm_top_team" primaryKey="team_id" rule="mod-long-team_id"/>
+		<table dataNode="dn$1-16" name="mcp_player_times" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="member_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="national_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="notice" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="open_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="pf_activ_info" primaryKey="activ_id" rule="mod-long-activ_id"/>
+		<table dataNode="dn$1-16" name="pf_basic_data" primaryKey="userid" rule="mod-long-userid"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="pf_beg_carp" primaryKey="beg_id" rule="mod-long-beg_id"/>
+		<table dataNode="dn$1-16" name="pf_country_rank" primaryKey="activ_id" rule="mod-long-activ_id"/>
+		<table dataNode="dn$1-16" name="pf_province_rank" primaryKey="activ_id" rule="mod-long-activ_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="pf_pub_msg" primaryKey="id" rule="mod-long-id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="pf_publish_board" primaryKey="pub_id" rule="mod-long-pub_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="pf_send_carp" primaryKey="send_id" rule="mod-long-send_id"/>
+		<table dataNode="dn$1-16" name="pf_server_proc_state" primaryKey="activ_id" rule="mod-long-activ_id"/>
+		<table dataNode="dn$1-16" name="pk_market_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="pk_market_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="play_log" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="player_match_end_time" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="player_match_gambling" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="player_recv_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="player_retention" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="pre_item_bonus" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="prob_gold_send_record" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="province_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="rank_refresh_time" primaryKey="ranktype" rule="sharding-by-murmur-ranktype"/>
+		<table dataNode="dn$1-16" name="scale_game_rate" primaryKey="cell" rule="mod-long-cell"/>
+		<table dataNode="dn$1-16" name="scratch_card_rate" primaryKey="cell" rule="mod-long-cell"/>
+		<table dataNode="dn$1-16" name="share_reward_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="silo_king_rank_award_user" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="silo_king_rank_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="silver_diamond_exchange" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="slots_scatter" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="slots_scatter_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="slots_treasure_game_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="small_game_display_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="sns_classic_province_score_double" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="sns_classic_province_score_single" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="sns_levelgame_award_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="sns_levelgame_branch_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="sns_levelgame_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="sns_mail" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="sns_mail_history" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="sns_mail_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="sns_user_location" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="sys_mail" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="teamplay_pass_rank_award_user" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="teamplay_pass_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="teamplay_pass_rank_status" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table dataNode="dn$1-16" name="teamplay_user_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="treasure_map_activ" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="treasure_map_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="unpack_gift_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_accessory_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_accessory_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_achieve_data" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_achievement_data" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_achievement_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_achievement_fish_data" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_achievement_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_active_task_control" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_active_task_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_active_task_week_control" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_active_task_week_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_avatar_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_avatar_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_ban_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_basic_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_benefit_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_bind_guest" primaryKey="outer_id" rule="sharding-by-murmur-outer_id"/>
+		<table dataNode="dn$1-16" name="user_bind_qq" primaryKey="outer_id" rule="sharding-by-murmur-outer_id"/>
+		<table dataNode="dn$1-16" name="user_bind_wc" primaryKey="outer_id" rule="sharding-by-murmur-outer_id"/>
+		<table dataNode="dn$1-16" name="user_boss_award_ctrl" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_chain_task_version_compat" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_chaintask_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_boss_score_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_control_status" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_controlpara_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_first_come_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_gold_ctrl" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_history_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_rank_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_classic_unlocked_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_common_time" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_daytask_activity" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_expedition_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_factor_unlock_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fc_ctrl_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fc_exp_luckydraw_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fc_friend_inviting_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fc_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fishpond_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fnunlock" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_fun_ban" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_gold_ctrl_common_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_gold_reward" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_guide" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_guild_day_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_guild_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_honor_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_honor_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_inventory_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_invite_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_activity_day_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_activity_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_activity_star_award_rcd" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_award_day_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_award_score_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_branch_day_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_branch_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_day_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_help_record" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_score" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_star_award_record" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_levelgame_stranger_help_record" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_luckydraw_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_lvl_activity_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_match_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_midas_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_month_signed" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_noble_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_online_prize_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_pf_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_privilege_card_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_props" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_random_score_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_real_treasure_map_piece" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_recall_record" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_recall_reward" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_referrer_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="user_reward_pond_history_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_roomtask_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_scratch_card_personal_history" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_send_props_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_status" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_superweapon_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_time_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_vitality_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="user_week_signed" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="version_bonus_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="vit_mail" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="vit_mail_info" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="yc_achieve_data" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_achievement_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_active_task_control" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_active_task_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_active_task_week_control" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_active_task_week_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_activity_bonus" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="yc_activity_priv" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="yc_activity_stat" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_activity_times" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="yc_attribute_prop" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_black_market_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_black_market_goods" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_bless" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_buy_vit" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_chaintask_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_cheating" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_combat_props" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_daytask_activity" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_endless_mode_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_endless_rank_award_user" primaryKey="uid" rule="mod-long-uid"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="yc_endless_rank_job_step" primaryKey="rank_id" rule="mod-long-rank_id"/>
+		<table autoIncrement="true" dataNode="dn$1-16" name="yc_endless_rank_refresh" primaryKey="id" rule="mod-long-id"/>
+		<table dataNode="dn$1-16" name="yc_endless_rank_score_double" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="yc_endless_rank_score_single" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="yc_endless_rank_top_n" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_endless_week" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_fish_card_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_fish_card_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_fishpond_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_friend_assist" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_gambling_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_gift_bag_present_time" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_guild_personal_task_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_gun_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_levelgame_unlock_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_master_gun_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_master_gun_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_offline_shipping_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_shop_goods" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_silver_coin_limit" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_slave_gun_detail" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_slave_gun_expcore" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_slave_gun_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_slave_gun_prop" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_sns_data" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="yc_time_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_trial_mode_info_mt" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_trial_mode_info_sc" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="yc_user_sns_data" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="yc_xgame_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="ycpk_challenge_info" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="ycpk_rank_score" primaryKey="openid" rule="sharding-by-murmur-openid"/>
+		<table dataNode="dn$1-16" name="ycpk_role_stat" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="ycpk_user_basic" primaryKey="uid" rule="mod-long-uid"/>
+		<table dataNode="dn$1-16" name="ycpk_user_info" primaryKey="uid" rule="mod-long-uid"/>
 	</schema>
-	<!-- <dataNode name="dn1$0-743" dataHost="localhost1" database="db$0-743"
-		/> -->
-	<dataNode name="dn1" dataHost="localhost1" database="db1" />
-	<dataNode name="dn2" dataHost="localhost1" database="db2" />
-	<dataNode name="dn3" dataHost="localhost1" database="db3" />
-	<!--<dataNode name="dn4" dataHost="sequoiadb1" database="SAMPLE" />
-	 <dataNode name="jdbc_dn1" dataHost="jdbchost" database="db1" />
-	<dataNode	name="jdbc_dn2" dataHost="jdbchost" database="db2" />
-	<dataNode name="jdbc_dn3" 	dataHost="jdbchost" database="db3" /> -->
-	<dataHost name="localhost1" maxCon="1000" minCon="10" balance="0"
-			  writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+	
+	
+	<dataNode dataHost="localhost1" database="db$1-16" name="dn$1-16"/>
+	
+
+
+	
+	<dataHost balance="0" dbDriver="native" dbType="mysql" maxCon="50" minCon="20" name="localhost1" slaveThreshold="100" switchType="1" writeType="0">
+		
+		
 		<heartbeat>select user()</heartbeat>
+		
+		
 		<!-- can have multi write hosts -->
-		<writeHost host="hostM1" url="localhost:3306" user="root"
-				   password="123456">
+		
+		
+		<writeHost host="hostM1" password="123456" url="127.0.0.1:3306" user="root">
+			
+			
 			<!-- can have multi read hosts -->
-			<readHost host="hostS2" url="192.168.1.200:3306" user="root" password="xxx" />
+			
+		
 		</writeHost>
-		<writeHost host="hostS1" url="localhost:3316" user="root"
-				   password="123456" />
-		<!-- <writeHost host="hostM2" url="localhost:3316" user="root" password="123456"/> -->
+		
+	
 	</dataHost>
-	<!--
-		<dataHost name="sequoiadb1" maxCon="1000" minCon="1" balance="0" dbType="sequoiadb" dbDriver="jdbc">
-		<heartbeat> 		</heartbeat>
-		 <writeHost host="hostM1" url="sequoiadb://1426587161.dbaas.sequoialab.net:11920/SAMPLE" user="jifeng" 	password="jifeng"></writeHost>
-		 </dataHost>
+	
 
-	  <dataHost name="oracle1" maxCon="1000" minCon="1" balance="0" writeType="0" 	dbType="oracle" dbDriver="jdbc"> <heartbeat>select 1 from dual</heartbeat>
-		<connectionInitSql>alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'</connectionInitSql>
-		<writeHost host="hostM1" url="jdbc:oracle:thin:@127.0.0.1:1521:nange" user="base" 	password="123456" > </writeHost> </dataHost>
-
-		<dataHost name="jdbchost" maxCon="1000" 	minCon="1" balance="0" writeType="0" dbType="mongodb" dbDriver="jdbc">
-		<heartbeat>select 	user()</heartbeat>
-		<writeHost host="hostM" url="mongodb://192.168.0.99/test" user="admin" password="123456" ></writeHost> </dataHost>
-
-		<dataHost name="sparksql" maxCon="1000" minCon="1" balance="0" dbType="spark" dbDriver="jdbc">
-		<heartbeat> </heartbeat>
-		 <writeHost host="hostM1" url="jdbc:hive2://feng01:10000" user="jifeng" 	password="jifeng"></writeHost> </dataHost> -->
-
-	<!-- <dataHost name="jdbchost" maxCon="1000" minCon="10" balance="0" dbType="mysql"
-		dbDriver="jdbc"> <heartbeat>select user()</heartbeat> <writeHost host="hostM1"
-		url="jdbc:mysql://localhost:3306" user="root" password="123456"> </writeHost>
-		</dataHost> -->
 </mycat:schema>

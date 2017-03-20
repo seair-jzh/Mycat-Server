@@ -182,6 +182,7 @@ public class FrontendAuthenticator implements NIOHandler {
         source.setUser(auth.user);
         source.setSchema(auth.database);
         source.setCharsetIndex(auth.charsetIndex);
+        //jiezhia switch to ConcurrentFrontendCommandHandler
         source.setHandler(new FrontendCommandHandler(source));
 
         if (LOGGER.isInfoEnabled()) {

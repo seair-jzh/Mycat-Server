@@ -27,434 +27,446 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 /**
  * Created by zagnix on 2016/6/21.
  */
 public class DataNodeMergeManager extends AbstractDataNodeMerge {
 
-    private static Logger LOGGER = Logger.getLogger(DataNodeMergeManager.class);
+	private static Logger LOGGER = Logger.getLogger(DataNodeMergeManager.class);
 
-    /**
-     * key为datanode的分片节点名字
-     * value为对应的排序器
-     * 目前，没有使用！
-     */
-    private ConcurrentHashMap<String, UnsafeExternalRowSorter> unsafeRows =
-            new ConcurrentHashMap<String,UnsafeExternalRowSorter>();
-    /**
-     * 全局sorter，排序器
-     */
-    private UnsafeExternalRowSorter globalSorter = null;
-    /**
-     * UnsafeRowGrouper
-     */
-    private UnsafeRowGrouper unsafeRowGrouper = null;
+	/**
+	 * key为datanode的分片节点名字 value为对应的排序器 目前，没有使用！
+	 */
+	private ConcurrentHashMap<String, UnsafeExternalRowSorter> unsafeRows = new ConcurrentHashMap<String, UnsafeExternalRowSorter>();
+	/**
+	 * 全局sorter，排序器
+	 */
+	private UnsafeExternalRowSorter globalSorter = null;
+	/**
+	 * UnsafeRowGrouper
+	 */
+	private UnsafeRowGrouper unsafeRowGrouper = null;
 
-    /**
-     * 全局merge，排序器
-     */
-    private UnsafeExternalRowSorter globalMergeResult = null;
+	/**
+	 * 全局merge，排序器
+	 */
+	private UnsafeExternalRowSorter globalMergeResult = null;
 
-    /**
-     * sorter需要的上下文环境
-     */
-    private final MyCatMemory myCatMemory;
-    private final MemoryManager memoryManager;
-    private final MycatPropertyConf conf;
-    /**
-     * Limit N，M
-     */
-    private final  int limitStart;
-    private final  int limitSize;
+	/**
+	 * sorter需要的上下文环境
+	 */
+	private final MyCatMemory myCatMemory;
+	private final MemoryManager memoryManager;
+	private final MycatPropertyConf conf;
+	/**
+	 * Limit N，M
+	 */
+	private final int limitStart;
+	private final int limitSize;
 
+	public DataNodeMergeManager(MultiNodeQueryHandler handler,
+			RouteResultset rrs) {
+		super(handler, rrs);
+		this.myCatMemory = MycatServer.getInstance().getMyCatMemory();
+		this.memoryManager = myCatMemory.getResultMergeMemoryManager();
+		this.conf = myCatMemory.getConf();
+		this.limitStart = rrs.getLimitStart();
+		this.limitSize = rrs.getLimitSize();
+	}
 
-    public DataNodeMergeManager(MultiNodeQueryHandler handler, RouteResultset rrs) {
-        super(handler,rrs);
-        this.myCatMemory = MycatServer.getInstance().getMyCatMemory();
-        this.memoryManager = myCatMemory.getResultMergeMemoryManager();
-        this.conf = myCatMemory.getConf();
-        this.limitStart = rrs.getLimitStart();
-        this.limitSize = rrs.getLimitSize();
-    }
+	public void onRowMetaData(Map<String, ColMeta> columToIndx, int fieldCount)
+			throws IOException {
 
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("field metadata keys:" + columToIndx.keySet());
+			LOGGER.debug("field metadata values:" + columToIndx.values());
+		}
 
-    public void onRowMetaData(Map<String, ColMeta> columToIndx, int fieldCount) throws IOException {
+		OrderCol[] orderCols = null;
+		StructType schema = null;
+		UnsafeExternalRowSorter.PrefixComputer prefixComputer = null;
+		PrefixComparator prefixComparator = null;
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("field metadata keys:" + columToIndx.keySet());
-            LOGGER.debug("field metadata values:" + columToIndx.values());
-        }
+		DataNodeMemoryManager dataNodeMemoryManager = null;
+		UnsafeExternalRowSorter sorter = null;
 
-        OrderCol[] orderCols = null;
-        StructType schema = null;
-        UnsafeExternalRowSorter.PrefixComputer prefixComputer = null;
-        PrefixComparator prefixComparator = null;
+		int[] groupColumnIndexs = null;
+		this.fieldCount = fieldCount;
 
-      
-        DataNodeMemoryManager dataNodeMemoryManager = null;
-        UnsafeExternalRowSorter sorter = null;
+		if (rrs.getGroupByCols() != null) {
+			groupColumnIndexs = toColumnIndex(rrs.getGroupByCols(), columToIndx);
+			if (LOGGER.isDebugEnabled()) {
+				for (int i = 0; i < rrs.getGroupByCols().length; i++) {
+					LOGGER.debug("groupColumnIndexs:" + rrs.getGroupByCols()[i]);
+				}
+			}
+		}
 
-        int[] groupColumnIndexs = null;
-        this.fieldCount = fieldCount;
+		if (rrs.getHavingCols() != null) {
+			ColMeta colMeta = columToIndx.get(rrs.getHavingCols().getLeft()
+					.toUpperCase());
 
-        if (rrs.getGroupByCols() != null) {
-            groupColumnIndexs = toColumnIndex(rrs.getGroupByCols(), columToIndx);
-            if (LOGGER.isDebugEnabled()) {
-                for (int i = 0; i <rrs.getGroupByCols().length ; i++) {
-                    LOGGER.debug("groupColumnIndexs:" + rrs.getGroupByCols()[i]);
-                }
-            }
-        }
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("getHavingCols:" + rrs.getHavingCols().toString());
+			}
+			if (colMeta != null) {
+				rrs.getHavingCols().setColMeta(colMeta);
+			}
+		}
 
+		if (rrs.isHasAggrColumn()) {
+			List<MergeCol> mergCols = new LinkedList<MergeCol>();
+			Map<String, Integer> mergeColsMap = rrs.getMergeCols();
 
-        if (rrs.getHavingCols() != null) {
-            ColMeta colMeta = columToIndx.get(rrs.getHavingCols().getLeft()
-                    .toUpperCase());
+			if (mergeColsMap != null) {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("isHasAggrColumn:" + mergeColsMap.toString());
+				}
+				for (Map.Entry<String, Integer> mergEntry : mergeColsMap
+						.entrySet()) {
+					String colName = mergEntry.getKey().toUpperCase();
+					int type = mergEntry.getValue();
+					if (MergeCol.MERGE_AVG == type) {
+						ColMeta sumColMeta = columToIndx.get(colName + "SUM");
+						ColMeta countColMeta = columToIndx.get(colName
+								+ "COUNT");
+						if (sumColMeta != null && countColMeta != null) {
+							ColMeta colMeta = new ColMeta(sumColMeta.colIndex,
+									countColMeta.colIndex,
+									sumColMeta.getColType());
+							mergCols.add(new MergeCol(colMeta, mergEntry
+									.getValue()));
+						}
+					} else {
+						ColMeta colMeta = columToIndx.get(colName);
+						mergCols.add(new MergeCol(colMeta, mergEntry.getValue()));
+					}
+				}
+			}
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("getHavingCols:" + rrs.getHavingCols().toString());
-            }
-            if (colMeta != null) {
-                rrs.getHavingCols().setColMeta(colMeta);
-            }
-        }
+			// add no alias merg column
+			for (Map.Entry<String, ColMeta> fieldEntry : columToIndx.entrySet()) {
+				String colName = fieldEntry.getKey();
+				int result = MergeCol.tryParseAggCol(colName);
+				if (result != MergeCol.MERGE_UNSUPPORT
+						&& result != MergeCol.MERGE_NOMERGE) {
+					mergCols.add(new MergeCol(fieldEntry.getValue(), result));
+				}
+			}
 
-        if (rrs.isHasAggrColumn()) {
-            List<MergeCol> mergCols = new LinkedList<MergeCol>();
-            Map<String, Integer> mergeColsMap = rrs.getMergeCols();
+			/**
+			 * Group操作
+			 */
+			unsafeRowGrouper = new UnsafeRowGrouper(columToIndx,
+					rrs.getGroupByCols(),
+					mergCols.toArray(new MergeCol[mergCols.size()]),
+					rrs.getHavingCols());
+		}
 
-            if (mergeColsMap != null) {
-            	if (LOGGER.isDebugEnabled()) {
-                	LOGGER.debug("isHasAggrColumn:" + mergeColsMap.toString());
-            	}
-                for (Map.Entry<String, Integer> mergEntry : mergeColsMap
-                        .entrySet()) {
-                    String colName = mergEntry.getKey().toUpperCase();
-                    int type = mergEntry.getValue();
-                    if (MergeCol.MERGE_AVG == type) {
-                        ColMeta sumColMeta = columToIndx.get(colName + "SUM");
-                        ColMeta countColMeta = columToIndx.get(colName
-                                + "COUNT");
-                        if (sumColMeta != null && countColMeta != null) {
-                            ColMeta colMeta = new ColMeta(sumColMeta.colIndex,
-                                    countColMeta.colIndex,
-                                    sumColMeta.getColType());
-                            mergCols.add(new MergeCol(colMeta, mergEntry
-                                    .getValue()));
-                        }
-                    } else {
-                        ColMeta colMeta = columToIndx.get(colName);
-                        mergCols.add(new MergeCol(colMeta, mergEntry.getValue()));
-                    }
-                }
-            }
+		if (rrs.getOrderByCols() != null) {
+			LinkedHashMap<String, Integer> orders = rrs.getOrderByCols();
+			orderCols = new OrderCol[orders.size()];
+			int i = 0;
+			for (Map.Entry<String, Integer> entry : orders.entrySet()) {
+				String key = StringUtil.removeBackquote(entry.getKey()
+						.toUpperCase());
+				ColMeta colMeta = columToIndx.get(key);
+				if (colMeta == null) {
+					throw new IllegalArgumentException(
+							"all columns in order by clause should be in the selected column list!"
+									+ entry.getKey());
+				}
+				orderCols[i++] = new OrderCol(colMeta, entry.getValue());
+			}
 
-            // add no alias merg column
-            for (Map.Entry<String, ColMeta> fieldEntry : columToIndx.entrySet()) {
-                String colName = fieldEntry.getKey();
-                int result = MergeCol.tryParseAggCol(colName);
-                if (result != MergeCol.MERGE_UNSUPPORT
-                        && result != MergeCol.MERGE_NOMERGE) {
-                    mergCols.add(new MergeCol(fieldEntry.getValue(), result));
-                }
-            }
+			/**
+			 * 构造全局排序器
+			 */
+			schema = new StructType(columToIndx, fieldCount);
+			schema.setOrderCols(orderCols);
 
-            /**
-             * Group操作
-             */
-            unsafeRowGrouper = new UnsafeRowGrouper(columToIndx,rrs.getGroupByCols(),
-                    mergCols.toArray(new MergeCol[mergCols.size()]),
-                    rrs.getHavingCols());
-        }
+			prefixComputer = new RowPrefixComputer(schema);
 
+			// if(orderCols.length>0
+			// && orderCols[0].getOrderType()
+			// == OrderCol.COL_ORDER_TYPE_ASC){
+			// prefixComparator = PrefixComparators.LONG;
+			// }else {
+			// prefixComparator = PrefixComparators.LONG_DESC;
+			// }
 
-        if (rrs.getOrderByCols() != null) {
-            LinkedHashMap<String, Integer> orders = rrs.getOrderByCols();
-            orderCols = new OrderCol[orders.size()];
-            int i = 0;
-            for (Map.Entry<String, Integer> entry : orders.entrySet()) {
-                String key = StringUtil.removeBackquote(entry.getKey()
-                        .toUpperCase());
-                ColMeta colMeta = columToIndx.get(key);
-                if (colMeta == null) {
-                    throw new IllegalArgumentException(
-                            "all columns in order by clause should be in the selected column list!"
-                                    + entry.getKey());
-                }
-                orderCols[i++] = new OrderCol(colMeta, entry.getValue());
-            }
+			prefixComparator = getPrefixComparator(orderCols);
 
-            /**
-             * 构造全局排序器
-             */
-            schema = new StructType(columToIndx,fieldCount);
-            schema.setOrderCols(orderCols);
+			dataNodeMemoryManager = new DataNodeMemoryManager(memoryManager,
+					Thread.currentThread().getId());
 
-            prefixComputer = new RowPrefixComputer(schema);
+			/**
+			 * 默认排序，只是将数据连续存储到内存中即可。
+			 */
+			globalSorter = new UnsafeExternalRowSorter(dataNodeMemoryManager,
+					myCatMemory, schema, prefixComparator, prefixComputer,
+					conf.getSizeAsBytes("mycat.buffer.pageSize", "1m"), false/**
+					 * 
+					 * 是否使用基数排序
+					 */
+					, true/** 排序 */
+			);
+		}
 
-//            if(orderCols.length>0
-//                    && orderCols[0].getOrderType()
-//                    == OrderCol.COL_ORDER_TYPE_ASC){
-//                prefixComparator = PrefixComparators.LONG;
-//            }else {
-//                prefixComparator = PrefixComparators.LONG_DESC;
-//            }
-            
-            prefixComparator = getPrefixComparator(orderCols);
+		if (conf.getBoolean("mycat.stream.output.result", false)
+				&& globalSorter == null && unsafeRowGrouper == null) {
+			setStreamOutputResult(true);
+		} else {
 
-            dataNodeMemoryManager =
-                    new DataNodeMemoryManager(memoryManager,Thread.currentThread().getId());
+			/**
+			 * 1.schema
+			 */
 
-            /**
-             * 默认排序，只是将数据连续存储到内存中即可。
-             */
-            globalSorter = new UnsafeExternalRowSorter(
-                    dataNodeMemoryManager,
-                    myCatMemory,
-                    schema,
-                    prefixComparator, prefixComputer,
-                    conf.getSizeAsBytes("mycat.buffer.pageSize","1m"),
-                    false/**是否使用基数排序*/,
-                    true/**排序*/);
-        }
+			schema = new StructType(columToIndx, fieldCount);
+			schema.setOrderCols(orderCols);
 
+			/**
+			 * 2 .PrefixComputer
+			 */
+			prefixComputer = new RowPrefixComputer(schema);
 
-        if(conf.getBoolean("mycat.stream.output.result",false)
-                && globalSorter == null
-                && unsafeRowGrouper == null){
-                setStreamOutputResult(true);
-        }else {
+			/**
+			 * 3 .PrefixComparator 默认是ASC，可以选择DESC
+			 */
 
-            /**
-             * 1.schema 
-             */
+			prefixComparator = PrefixComparators.LONG;
 
-             schema = new StructType(columToIndx,fieldCount);
-             schema.setOrderCols(orderCols);
+			dataNodeMemoryManager = new DataNodeMemoryManager(memoryManager,
+					Thread.currentThread().getId());
 
-            /**
-             * 2 .PrefixComputer
-             */
-             prefixComputer = new RowPrefixComputer(schema);
+			globalMergeResult = new UnsafeExternalRowSorter(
+					dataNodeMemoryManager, myCatMemory, schema,
+					prefixComparator, prefixComputer, conf.getSizeAsBytes(
+							"mycat.buffer.pageSize", "1m"), false, /** 是否使用基数排序 */
+					false/** 不排序 */
+			);
+		}
+	}
 
-            /**
-             * 3 .PrefixComparator 默认是ASC，可以选择DESC
-             */
-
-            prefixComparator = PrefixComparators.LONG;
-
-
-            dataNodeMemoryManager = new DataNodeMemoryManager(memoryManager,
-                            Thread.currentThread().getId());
-
-            globalMergeResult = new UnsafeExternalRowSorter(
-                    dataNodeMemoryManager,
-                    myCatMemory,
-                    schema,
-                    prefixComparator,
-                    prefixComputer,
-                    conf.getSizeAsBytes("mycat.buffer.pageSize", "1m"),
-                    false,/**是否使用基数排序*/
-                    false/**不排序*/);
-        }
-    }
-    
-    private PrefixComparator getPrefixComparator(OrderCol[] orderCols) {
+	private PrefixComparator getPrefixComparator(OrderCol[] orderCols) {
 		PrefixComparator prefixComparator = null;
 		OrderCol firstOrderCol = orderCols[0];
 		int orderType = firstOrderCol.getOrderType();
 		int colType = firstOrderCol.colMeta.colType;
-		
+
 		switch (colType) {
-			case ColMeta.COL_TYPE_INT:
-			case ColMeta.COL_TYPE_LONG:
-			case ColMeta.COL_TYPE_INT24:
-			case ColMeta.COL_TYPE_SHORT:
-			case ColMeta.COL_TYPE_LONGLONG:
-				prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.LONG : PrefixComparators.LONG_DESC);
-				break;
-			case ColMeta.COL_TYPE_FLOAT:
-			case ColMeta.COL_TYPE_DOUBLE:
-			case ColMeta.COL_TYPE_DECIMAL:
-			case ColMeta.COL_TYPE_NEWDECIMAL:
-				prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.DOUBLE : PrefixComparators.DOUBLE_DESC);
-				break;
-			case ColMeta.COL_TYPE_DATE:
-			case ColMeta.COL_TYPE_TIMSTAMP:
-			case ColMeta.COL_TYPE_TIME:
-			case ColMeta.COL_TYPE_YEAR:
-			case ColMeta.COL_TYPE_DATETIME:
-			case ColMeta.COL_TYPE_NEWDATE:
-			case ColMeta.COL_TYPE_BIT:
-			case ColMeta.COL_TYPE_VAR_STRING:
-			case ColMeta.COL_TYPE_STRING:
-			case ColMeta.COL_TYPE_ENUM:
-			case ColMeta.COL_TYPE_SET:
-				prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.BINARY : PrefixComparators.BINARY_DESC);
-				break;
-			default:
-				prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.LONG : PrefixComparators.LONG_DESC);
-				break;
+		case ColMeta.COL_TYPE_INT:
+		case ColMeta.COL_TYPE_LONG:
+		case ColMeta.COL_TYPE_INT24:
+		case ColMeta.COL_TYPE_SHORT:
+		case ColMeta.COL_TYPE_LONGLONG:
+			prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.LONG
+					: PrefixComparators.LONG_DESC);
+			break;
+		case ColMeta.COL_TYPE_FLOAT:
+		case ColMeta.COL_TYPE_DOUBLE:
+		case ColMeta.COL_TYPE_DECIMAL:
+		case ColMeta.COL_TYPE_NEWDECIMAL:
+			prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.DOUBLE
+					: PrefixComparators.DOUBLE_DESC);
+			break;
+		case ColMeta.COL_TYPE_DATE:
+		case ColMeta.COL_TYPE_TIMSTAMP:
+		case ColMeta.COL_TYPE_TIME:
+		case ColMeta.COL_TYPE_YEAR:
+		case ColMeta.COL_TYPE_DATETIME:
+		case ColMeta.COL_TYPE_NEWDATE:
+		case ColMeta.COL_TYPE_BIT:
+		case ColMeta.COL_TYPE_VAR_STRING:
+		case ColMeta.COL_TYPE_STRING:
+		case ColMeta.COL_TYPE_ENUM:
+		case ColMeta.COL_TYPE_SET:
+			prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.BINARY
+					: PrefixComparators.BINARY_DESC);
+			break;
+		default:
+			prefixComparator = (orderType == OrderCol.COL_ORDER_TYPE_ASC ? PrefixComparators.LONG
+					: PrefixComparators.LONG_DESC);
+			break;
 		}
-		
+
 		return prefixComparator;
 	}
 
-    @Override
-    public List<RowDataPacket> getResults(byte[] eof) {
-        return null;
-    }
+	@Override
+	public List<RowDataPacket> getResults(byte[] eof) {
+		return null;
+	}
 
-    private UnsafeRow unsafeRow = null;
-    private BufferHolder bufferHolder = null;
-    private UnsafeRowWriter unsafeRowWriter = null;
-    private  int Index = 0;
+	private UnsafeRow unsafeRow = null;
+	private BufferHolder bufferHolder = null;
+	private UnsafeRowWriter unsafeRowWriter = null;
+	private int Index = 0;
 
-    @Override
-    public void run() {
+	@Override
+	public void run() {
 
-        if (!running.compareAndSet(false, true)) {
-            return;
-        }
+		if (!running.compareAndSet(false, true)) {
+			return;
+		}
 
-        boolean nulpack = false;
+		boolean nulpack = false;
 
-        try {
-            for (; ; ) {
-                final PackWraper pack = packs.poll();
+		try {
+			for (;;) {
+				final PackWraper pack = packs.poll();
 
-                if (pack == null) {
-                    nulpack = true;
-                    break;
-                }
-                if (pack == END_FLAG_PACK) {
-                    /**
-                     * 最后一个节点datenode发送了row eof packet说明了整个
-                     * 分片数据全部接收完成，进而将结果集全部发给你Mycat 客户端
-                     */
-                    final int warningCount = 0;
-                    final EOFPacket eofp = new EOFPacket();
-                    final ByteBuffer eof = ByteBuffer.allocate(9);
-                    BufferUtil.writeUB3(eof, eofp.calcPacketSize());
-                    eof.put(eofp.packetId);
-                    eof.put(eofp.fieldCount);
-                    BufferUtil.writeUB2(eof,warningCount);
-                    BufferUtil.writeUB2(eof,eofp.status);
-                    final ServerConnection source = multiQueryHandler.getSession().getSource();
-                    final byte[] array = eof.array();
+				if (pack == null) {
+					nulpack = true;
+					break;
+				}
+				if (pack == END_FLAG_PACK) {
+					/**
+					 * 最后一个节点datenode发送了row eof packet说明了整个
+					 * 分片数据全部接收完成，进而将结果集全部发给你Mycat 客户端
+					 */
+					final int warningCount = 0;
+					final EOFPacket eofp = new EOFPacket();
+					final ByteBuffer eof = ByteBuffer.allocate(9);
+					BufferUtil.writeUB3(eof, eofp.calcPacketSize());
+					eof.put(eofp.packetId);
+					eof.put(eofp.fieldCount);
+					BufferUtil.writeUB2(eof, warningCount);
+					BufferUtil.writeUB2(eof, eofp.status);
+					final ServerConnection source = multiQueryHandler
+							.getSession().getSource();
+					final byte[] array = eof.array();
 
+					Iterator<UnsafeRow> iters = null;
 
-                    Iterator<UnsafeRow> iters = null;
+					if (unsafeRowGrouper != null) {
+						/**
+						 * group by里面需要排序情况
+						 */
+						if (globalSorter != null) {
+							iters = unsafeRowGrouper.getResult(globalSorter);
+						} else {
+							iters = unsafeRowGrouper
+									.getResult(globalMergeResult);
+						}
 
+					} else if (globalSorter != null) {
 
-                    if (unsafeRowGrouper != null){
-                        /**
-                         * group by里面需要排序情况
-                         */
-                        if (globalSorter != null){
-                            iters = unsafeRowGrouper.getResult(globalSorter);
-                        }else {
-                            iters = unsafeRowGrouper.getResult(globalMergeResult);
-                        }
+						iters = globalSorter.sort();
 
-                    }else if(globalSorter != null){
+					} else if (!isStreamOutputResult) {
 
-                        iters = globalSorter.sort();
+						iters = globalMergeResult.sort();
 
-                    }else if (!isStreamOutputResult){
+					}
 
-                        iters = globalMergeResult.sort();
+					if (iters != null)
+						multiQueryHandler.outputMergeResult(source, array,
+								iters);
 
-                    }
+					synchronized (this) {
+						if (unsafeRowGrouper != null) {
+							unsafeRowGrouper.free();
+							unsafeRowGrouper = null;
+						}
+	
+						if (globalSorter != null) {
+							globalSorter.cleanupResources();
+							globalSorter = null;
+						}
+	
+						if (globalMergeResult != null) {							
+							globalMergeResult.cleanupResources();
+							globalMergeResult = null;
+						}
+					}
 
-                    if(iters != null)
-                        multiQueryHandler.outputMergeResult(source,array,iters);
+					break;
+				}
 
+				unsafeRow = new UnsafeRow(fieldCount);
+				bufferHolder = new BufferHolder(unsafeRow, 0);
+				unsafeRowWriter = new UnsafeRowWriter(bufferHolder, fieldCount);
+				bufferHolder.reset();
 
-                    if(unsafeRowGrouper!=null){
-                        unsafeRowGrouper.free();
-                        unsafeRowGrouper = null;
-                    }
+				/**
+				 * 构造一行row，将对应的col填充.
+				 */
+				MySQLMessage mm = new MySQLMessage(pack.rowData);
+				mm.readUB3();
+				mm.read();
 
-                    if(globalSorter != null){
-                        globalSorter.cleanupResources();
-                        globalSorter = null;
-                    }
+				for (int i = 0; i < fieldCount; i++) {
+					try{
+					byte[] colValue = mm.readBytesWithLength();
+					
+					if (colValue != null)
+						unsafeRowWriter.write(i, colValue);
+					else
+						unsafeRow.setNullAt(i);
+					}catch(Exception e){
+						System.out.println("how can it be");
+					}
+				}
 
-                    if (globalMergeResult != null){
-                        globalMergeResult.cleanupResources();
-                        globalMergeResult = null;
-                    }
+				unsafeRow.setTotalSize(bufferHolder.totalSize());
 
-                    break;
-                }
+				if (unsafeRowGrouper != null) {
+					unsafeRowGrouper.addRow(unsafeRow);
+				} else if (globalSorter != null) {
+					globalSorter.insertRow(unsafeRow);
+				} else {
+					/*if(globalMergeResult == null){
+						Exception e = new Exception();
+						LOGGER.warn("globalMergeResult is null, this:" + this.toString(), e);
+					}*/
+					try{
+						globalMergeResult.insertRow(unsafeRow);
+					}catch(NullPointerException e){
+						LOGGER.warn("globalMergeResult is null, this:" + this.toString(), e);
+						throw e;
+					}
+				}
 
-                unsafeRow = new UnsafeRow(fieldCount);
-                bufferHolder = new BufferHolder(unsafeRow,0);
-                unsafeRowWriter = new UnsafeRowWriter(bufferHolder,fieldCount);
-                bufferHolder.reset();
+				unsafeRow = null;
+				bufferHolder = null;
+				unsafeRowWriter = null;
+			}
 
-                /**
-                 *构造一行row，将对应的col填充.
-                 */
-                MySQLMessage mm = new MySQLMessage(pack.rowData);
-                mm.readUB3();
-                mm.read();
+		} catch (final Exception e) {
+			multiQueryHandler.handleDataProcessException(e);
+		} finally {
+			running.set(false);
+			if (nulpack && !packs.isEmpty()) {
+				this.run();
+			}
+		}
+	}
 
-                for (int i = 0; i < fieldCount; i++) {
-                    byte[] colValue = mm.readBytesWithLength();
-                    if (colValue != null)
-                    	unsafeRowWriter.write(i,colValue);
-                    else
-                        unsafeRow.setNullAt(i);
-                }
+	/**
+	 * 释放DataNodeMergeManager所申请的资源
+	 */
+	public void clear() {
 
-                unsafeRow.setTotalSize(bufferHolder.totalSize());
+		synchronized (this) {
+			unsafeRows.clear();
 
-                if(unsafeRowGrouper != null){
-                    unsafeRowGrouper.addRow(unsafeRow);
-                }else if (globalSorter != null){
-                    globalSorter.insertRow(unsafeRow);
-                }else {
-                    globalMergeResult.insertRow(unsafeRow);
-                }
+			if (unsafeRowGrouper != null) {
+				unsafeRowGrouper.free();
+				unsafeRowGrouper = null;
+			}
 
-                unsafeRow = null;
-                bufferHolder = null;
-                unsafeRowWriter = null;
-            }
+			if (globalSorter != null) {
+				globalSorter.cleanupResources();
+				globalSorter = null;
+			}
 
-        } catch (final Exception e) {
-            multiQueryHandler.handleDataProcessException(e);
-        } finally {
-            running.set(false);
-            if (nulpack && !packs.isEmpty()) {
-                this.run();
-            }
-        }
-    }
+			if (globalMergeResult != null) {
+				
+				globalMergeResult.cleanupResources();
+				globalMergeResult = null;
+			}
 
-    /**
-     * 释放DataNodeMergeManager所申请的资源
-     */
-    public void clear() {
-
-        unsafeRows.clear();
-
-        if(unsafeRowGrouper!=null){
-            unsafeRowGrouper.free();
-            unsafeRowGrouper = null;
-        }
-
-        if(globalSorter != null){
-            globalSorter.cleanupResources();
-            globalSorter = null;
-        }
-
-        if (globalMergeResult != null){
-            globalMergeResult.cleanupResources();
-            globalMergeResult = null;
-        }
-    }
+		}
+	}
 }

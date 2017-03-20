@@ -310,6 +310,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements LoadDataR
 				QueryResult queryResult = new QueryResult(session.getSource().getUser(), 
 						rrs.getSqlType(), rrs.getStatement(), selectRows, netInBytes, netOutBytes, startTime, System.currentTimeMillis(),0);
 				QueryResultDispatcher.dispatchQuery( queryResult );
+				source.onRemoteQueryFinish();
 			}
 		}
 	}
@@ -381,6 +382,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements LoadDataR
 			QueryResult queryResult = new QueryResult(session.getSource().getUser(), 
 					rrs.getSqlType(), rrs.getStatement(), selectRows, netInBytes, netOutBytes, startTime, System.currentTimeMillis(),resultSize);
 			QueryResultDispatcher.dispatchQuery( queryResult );
+			source.onRemoteQueryFinish();
 		}
 
 	}

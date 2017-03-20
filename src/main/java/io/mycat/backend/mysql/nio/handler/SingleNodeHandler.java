@@ -226,6 +226,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		
 		ServerConnection source = session.getSource();
 		source.write(err.write(allocBuffer(), source, true));
+		source.onRemoteQueryFinish();
 	}
 
 	@Override
@@ -271,6 +272,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		errPkg.write(source);
 		
 		recycleResources();
+		source.onRemoteQueryFinish();
+		
 	}
 
 
@@ -320,6 +323,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 			QueryResult queryResult = new QueryResult(session.getSource().getUser(), 
 					rrs.getSqlType(), rrs.getStatement(), affectedRows, netInBytes, netOutBytes, startTime, System.currentTimeMillis(),0);
 			QueryResultDispatcher.dispatchQuery( queryResult );
+			source.onRemoteQueryFinish();
 		}
 	}
 
@@ -353,6 +357,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		QueryResult queryResult = new QueryResult(session.getSource().getUser(), 
 				rrs.getSqlType(), rrs.getStatement(), affectedRows, netInBytes, netOutBytes, startTime, System.currentTimeMillis(),resultSize);
 		QueryResultDispatcher.dispatchQuery( queryResult );
+		
+		source.onRemoteQueryFinish();
 		
 	}
 

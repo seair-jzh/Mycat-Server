@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.mycat</groupId>
 	<artifactId>Mycat-server</artifactId>
-	<version>1.6.5-BETA</version>
+	<version>1.6-RELEASE</version>
 	<packaging>jar</packaging>
 	<name>Mycat-server</name>
 	<description>The project of Mycat-server</description>
@@ -27,8 +27,20 @@
 		<repository>
 			<id>nexus</id>
 			<name>local private nexus</name>
+			<url>http://localhost:8081/nexus/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>third-party</id>
+			<name>local private nexus</name>
+			<url>http://localhost:8081/nexus/content/repositories/thirdparty</url>
+		</repository>
+		
+		<repository>
+			<id>nexusmycat</id>
+			<name>local private nexus</name>
 			<url>http://nexus.mycat.io/content/groups/public</url>
 		</repository>
+		
 	</repositories>
 	<distributionManagement>
 		<repository>
@@ -45,6 +57,14 @@
 	<dependencies>
 		<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava-parent</artifactId> 
 			<version>18.0</version> </dependency> -->
+		<dependency>
+	      <groupId>com.trilead</groupId>
+	      <artifactId>trilead-ssh2</artifactId>
+	      <version>1.0.0-build221</version>
+	      <scope>system</scope>
+	      <systemPath>D:\OpenSource\MyCat\lib\trilead-ssh2-1.0.0-build221.jar</systemPath>
+	    </dependency>
+		
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
@@ -74,6 +94,7 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.35</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
@@ -175,11 +196,16 @@
             </exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
 			<version>1.2.12</version>
 		</dependency>
-		<!-- joda日期处理工具 -->
+		<!-- joda鏃ユ湡澶勭悊宸ュ叿 -->
         <dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
@@ -189,7 +215,7 @@
 		<dependency>
 			<groupId>com.github.shyiko</groupId>
 			<artifactId>mysql-binlog-connector-java</artifactId>
-			<version>0.6.0</version>
+			<version>0.4.1</version>
 		</dependency>
 
 
@@ -437,7 +463,7 @@
 								<platform>jsw</platform>
 							</platforms>
 							<jvmSettings>
-								<!-- 启动内存配置 -->
+								<!-- 鍚姩鍐呭瓨閰嶇疆 -->
 								<maxStackSize>128</maxStackSize>
 								<systemProperties>
 									<systemProperty>MYCAT_HOME=.</systemProperty>
@@ -447,7 +473,7 @@
 									<extraArgument>-XX:MaxPermSize=64M</extraArgument>
 									<extraArgument>-XX:+AggressiveOpts</extraArgument>
 									<extraArgument>-XX:MaxDirectMemorySize=2G</extraArgument>
-									<!-- 远程JMX -->
+									<!-- 杩滅▼JMX -->
 									<extraArgument>-Dcom.sun.management.jmxremote </extraArgument>
 									<extraArgument>-Dcom.sun.management.jmxremote.port=1984</extraArgument>
 									<extraArgument>-Dcom.sun.management.jmxremote.authenticate=false </extraArgument>
@@ -580,6 +606,13 @@
 
 				</configuration>
 				<dependencies>
+					<dependency>
+				      <groupId>com.trilead</groupId>
+				      <artifactId>trilead-ssh2</artifactId>
+				      <version>1.0.0-build221</version>
+				      <scope>system</scope>
+				      <systemPath>C:\Users\jiezhia\Desktop\Mycat-Server-1.6-Release\lib\trilead-ssh2-1.0.0-build221.jar</systemPath>
+				    </dependency>
 					<dependency>
 						<groupId>org.apache.maven.scm</groupId>
 						<artifactId>maven-scm-provider-gitexe</artifactId>

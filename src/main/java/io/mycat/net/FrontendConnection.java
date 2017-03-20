@@ -31,23 +31,40 @@ import io.mycat.backend.mysql.MySQLMessage;
 import io.mycat.config.Capabilities;
 import io.mycat.config.ErrorCode;
 import io.mycat.config.Versions;
+import io.mycat.manager.handler.ClearHandler;
+import io.mycat.manager.handler.ConfFileHandler;
+import io.mycat.manager.handler.ReloadHandler;
+import io.mycat.manager.handler.RollbackHandler;
+import io.mycat.manager.handler.SelectHandler;
+import io.mycat.manager.handler.ShowHandler;
+import io.mycat.manager.handler.ShowServerLog;
+import io.mycat.manager.handler.StopHandler;
+import io.mycat.manager.handler.SwitchHandler;
+import io.mycat.manager.response.KillConnection;
+import io.mycat.manager.response.Offline;
+import io.mycat.manager.response.Online;
 import io.mycat.net.handler.*;
 import io.mycat.net.mysql.ErrorPacket;
 import io.mycat.net.mysql.HandshakePacket;
 import io.mycat.net.mysql.HandshakeV10Packet;
 import io.mycat.net.mysql.MySQLPacket;
 import io.mycat.net.mysql.OkPacket;
+import io.mycat.route.parser.ManagerParse;
 import io.mycat.util.CompressUtil;
 import io.mycat.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author mycat
@@ -72,6 +89,24 @@ public abstract class FrontendConnection extends AbstractConnection {
 	protected LoadDataInfileHandler loadDataInfileHandler;
 	protected boolean isAccepted;
 	protected boolean isAuthenticated;
+	
+	/**
+     * rowData缓存队列
+     */
+    protected BlockingQueue<MySQLMessage> req_packs = new LinkedBlockingQueue<MySQLMessage>();
+
+    /**
+     * 标志是否正在執行中？
+     */
+    protected final AtomicBoolean executing = new AtomicBoolean(false);
+    
+    /**
+     * 标志是否正在後端查詢中？
+     */
+    protected final AtomicBoolean querying = new AtomicBoolean(false);
+    
+    protected final AtomicBoolean hasReadEof = new AtomicBoolean(false);
+    
 
 	public FrontendConnection(NetworkChannel channel) throws IOException {
 		super(channel);
@@ -208,6 +243,11 @@ public abstract class FrontendConnection extends AbstractConnection {
 		err.write(this);
 	}
 	
+	//jiezhia add
+	public void onRemoteQueryFinish(){
+		
+	}
+	
 	public void initDB(byte[] data) {
 		
 		MySQLMessage mm = new MySQLMessage(data);
@@ -278,6 +318,48 @@ public abstract class FrontendConnection extends AbstractConnection {
 	}
 	
 	
+	@Override
+	public void writeToQueue(ByteBuffer bb) {				
+		int offset = 0;
+		
+		int headerSize = getPacketHeaderSize();
+		assert(bb.position() > headerSize);
+		while(true){
+			int length = getPacketLength(bb, offset);
+			if(length > 0){
+				int position = bb.position();
+				assert(position >= length);
+				byte cbPackId = bb.get(offset + headerSize - 1);				
+				byte cbtype = bb.get(offset + headerSize);
+				if(cbtype == (byte)0x00 || cbtype == (byte)0xFF){
+					querying.set(false);	
+					hasReadEof.set(false);
+					if(!executing.get() && !querying.get() && !req_packs.isEmpty()){
+						cycleHandle();
+					}
+				}else if(cbtype == (byte)0xFE){
+					if(hasReadEof.get()){
+						querying.set(false);	
+						hasReadEof.set(false);
+						if(!executing.get() && !querying.get() && !req_packs.isEmpty()){
+							cycleHandle();
+						}
+					}else{
+						hasReadEof.set(true);
+					}
+				}
+				offset += (length);
+			}else{
+				System.out.println("how can it be");
+				break;
+			}
+			if(bb.position() <= offset){
+				break;
+			}		
+		}		
+		super.writeToQueue(bb);		
+	}
+
 	public void query(String sql) {
 		
 		if (sql == null || sql.length() == 0) {
@@ -319,9 +401,12 @@ public abstract class FrontendConnection extends AbstractConnection {
 	     }
 		
 		// 执行查询
-		if (queryHandler != null) {			
+		if (queryHandler != null) {	
+			
+			assert(!querying.get());
+			querying.set(true);
 			queryHandler.setReadOnly(privileges.isReadOnly(user));
-			queryHandler.query(sql);
+			queryHandler.query(sql);			
 			
 		} else {
 			writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Query unsupported!");
@@ -469,7 +554,13 @@ public abstract class FrontendConnection extends AbstractConnection {
 
 	@Override
 	public void handle(final byte[] data) {
-
+		
+		MySQLMessage mm = new MySQLMessage(data);
+		req_packs.add(mm);
+		if(!executing.get() && !querying.get()){
+			cycleHandle();
+		}
+		/*
 		if (isSupportCompress()) {			
 			List<byte[]> packs = CompressUtil.decompressMysqlPacket(data, decompressUnfinishedDataQueue);
 			for (byte[] pack : packs) {
@@ -480,6 +571,34 @@ public abstract class FrontendConnection extends AbstractConnection {
 			
 		} else {
 			rawHandle(data);
+		}*/
+	}
+	
+	public void cycleHandle(){
+		if(executing.get() || querying.get()){
+			return;
+		}
+		if (!executing.compareAndSet(false, true)) {
+			return;
+		}
+		final MySQLMessage mm = req_packs.poll();
+		if(mm != null){
+			byte[] data = mm.bytes();
+			if (isSupportCompress()) {			
+				List<byte[]> packs = CompressUtil.decompressMysqlPacket(data, decompressUnfinishedDataQueue);
+				for (byte[] pack : packs) {
+					if (pack.length != 0) {
+						rawHandle(pack);
+					}
+				}
+				
+			} else {
+				rawHandle(data);
+			}
+		}		
+		executing.set(false);
+		if(!executing.get() && !querying.get() && !req_packs.isEmpty()){
+			cycleHandle();
 		}
 	}
 

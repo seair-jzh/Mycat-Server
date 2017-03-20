@@ -32,6 +32,7 @@ import io.mycat.backend.BackendConnection;
 import io.mycat.config.ErrorCode;
 import io.mycat.net.mysql.ErrorPacket;
 import io.mycat.server.NonBlockingSession;
+import io.mycat.server.ServerConnection;
 import io.mycat.util.StringUtil;
 
 /**
@@ -211,6 +212,7 @@ abstract class MultiNodeHandler implements ResponseHandler, Terminatable {
 			}
 
 		}
+		session.getSource().onRemoteQueryFinish();
 
 	}
 
